@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title>DebugClay</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Just+Another+Hand&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Barra de navegación -->
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <img src="DepuradorClay.png" alt="Logo" width="70" class="img-fluid me-0" />
+        </div>
+        <div class="col">
+          <p class="namePage">DebugClay.com</p>
+        </div>
+        <div class="col-auto">
+          <img src="lenguaje_c.png" alt="C" width="80" class="img-fluid me-5" />
+          <img src="lenguaje_c++.png" alt="C++" width="60" class="img-fluid me-5" />
+          <img src="lenguaje_python.png" alt="python" width="65" class="img-fluid" />
+        </div>
+      </div>
+    </div>
+    <hr />
+    <!-- Contenido principal -->
+    <div class="container mt-4">
+      <div class="row">
+        <!-- Columna izquierda: Código -->
+        <div class="col-md-5" style="position: relative;">
+          <p class="codigo-title">CODIGO</p>
+          <textarea id="codeInput" class="custom-area" rows="16" placeholder="Pegue aqui su codigo"></textarea>
+          <img id="arrowIndicator" src="flecha.png" style="position:absolute; left: -40px; top: 30px; width:32px; display:block; z-index:10;" />
+          <p class="codigo-title">ENTRADA</p>
+          <textarea id="outputArea" class="custom-area" rows="6" placeholder="Ingresa los campos"></textarea>
+        </div>
+        <!-- Columna derecha: Stack y Heap -->
+        <div class="col-md-7">
+          <div class="col-md-5">
+            <button id="runButton" class="btn btn-primary" onclick="runCode()">RUN</button>
+            <button id="previus" class="btn btn-primary" onclick="previus()">PREVIUS</button>
+            <button id="next" class="btn btn-secondary" onclick="next()">NEXT</button>
+          </div>
+          <div class="mb-5">
+            <p class="stack-title">STACK</p>
+            <div id="stackVisual" class="stack-visual"></div>
+          </div>
+          <div class="mb-5">
+            <p class="heap-title">HEAP</p>
+            <div id="heapVisual" class="heap-visual"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
