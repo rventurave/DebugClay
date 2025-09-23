@@ -3,9 +3,12 @@ const editor = CodeMirror.fromTextArea(document.getElementById("codeInput"), {
     mode: "text/x-csrc", // o el lenguaje que prefieras
     theme: "default"
 });
-
+ 
 let currentLine = 0;
 const arrow = document.getElementById("arrowIndicator");
+
+// Estado global del ciclo for (¡mueve esto fuera de la función!)
+let forState = null;
 
 // Mueve la flecha a la línea indicada
 function moveArrowToLine(line) {
@@ -82,8 +85,29 @@ function analyzeCurrentLine() {
         variableValues[arg] = argValues[idx];
     });
 
+    // Detecta el for en el código
+    let forLine = -1, forVar, forInit, forCond, forInc;
     for (let i = 0; i <= currentLine; i++) {
         const lineText = editor.getLine(i);
+
+        // Detecta el for
+        const forMatch = lineText.match(/for\s*\(\s*(int\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(\d+)\s*;\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*<\s*([a-zA-Z_][a-zA-Z0-9_]*|\d+)\s*;\s*([a-zA-Z_][a-zA-Z0-9_]*)\+\+\s*\)/);
+        if (forMatch) {
+            forLine = i;
+            forVar = forMatch[2];
+            forInit = Number(forMatch[3]);
+            forCond = forMatch[5];
+            forInc = forMatch[6];
+            // Inicializa el estado del for solo la primera vez
+            if (!forState || forState.line !== forLine) {
+                forState = {
+                    line: forLine,
+                    i: forInit,
+                    done: false
+                };
+                variableValues[forVar] = forInit;
+            }
+        }
 
         // Heap: si la línea contiene 'malloc' o 'new'
         if (/malloc|new/.test(lineText)) {
@@ -126,6 +150,31 @@ function analyzeCurrentLine() {
             const varName = directAssignMatch[1];
             variableValues[varName] = Number(directAssignMatch[2]);
         }
+
+        // Simulación del ciclo for
+        if (forState && !forState.done && i > forLine && i <= currentLine) {
+            let condLimit = isNaN(Number(forCond)) ? variableValues[forCond] : Number(forCond);
+            if (forState.i < condLimit) {
+                variableValues[forVar] = forState.i;
+                // Ejecuta el cuerpo del for (puedes agregar aquí la lógica de suma, etc.)
+                // ...asignaciones y operaciones...
+                // Si estamos en la última línea del cuerpo del for
+                if (i === currentLine) {
+                    forState.i++;
+                    // Si aún cumple la condición, regresa el apuntador al inicio del for
+                    if (forState.i < condLimit) {
+                        variableValues[forVar] = forState.i; // Actualiza el valor en el stack
+                        currentLine = forLine;
+                        moveArrowToLine(currentLine);
+                        editor.setCursor({line: currentLine, ch: 0});
+                    } else {
+                        forState.done = true;
+                    }
+                }
+            } else {
+                forState.done = true;
+            }
+        }
     }
 
     // Agrega los argumentos al stack si no están ya
@@ -143,12 +192,32 @@ function analyzeCurrentLine() {
 // Puedes llamar a analyzeCurrentLine() cuando cambie la línea apuntada por la flecha
 editor.on("cursorActivity", analyzeCurrentLine);
 window.next = function() {
+    // Si estamos en un ciclo for y faltan iteraciones, repite el ciclo
+    if (forState && !forState.done) {
+        let condLimit = isNaN(Number(forState.cond)) ? forState.condValue : Number(forState.cond);
+        if (forState.i < condLimit) {
+            // Ejecuta la iteración y actualiza el valor de la variable del ciclo
+            forState.i++;
+            if (forState.i < condLimit) {
+                currentLine = forState.line; // Vuelve al inicio del for
+                moveArrowToLine(currentLine);
+                editor.setCursor({line: currentLine, ch: 0});
+            } else {
+                forState.done = true;
+                currentLine++; // Sale del for
+                moveArrowToLine(currentLine);
+                editor.setCursor({line: currentLine, ch: 0});
+            }
+            analyzeCurrentLine();
+            return;
+        }
+    }
+    // Comportamiento normal si no está en for
     if (currentLine < editor.lineCount() - 1) {
         currentLine++;
         moveArrowToLine(currentLine);
         editor.setCursor({line: currentLine, ch: 0});
     } else {
-        // Si está en la última línea, agrega una nueva línea y avanza
         editor.replaceRange("\n", {line: editor.lineCount()});
         currentLine++;
         moveArrowToLine(currentLine);
