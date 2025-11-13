@@ -162,9 +162,6 @@ class ArbolAVL {
 }
 
 // ================== Función para normalizar números ==================
-function normalizarNumero(n) {
-    return String(n).padStart(3, "0");
-}
 
 // ================== Ejemplo de uso ==================
 //function main() {
@@ -190,4 +187,4 @@ function normalizarNumero(n) {
 //}
 
 //main();
-export { ArbolAVL, normalizarNumero };
+export { ArbolAVL};

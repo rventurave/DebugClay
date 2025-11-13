@@ -225,9 +225,39 @@ class BTree {
     node.keys.splice(idx, 1);
     node.children.splice(idx + 1, 1);
   }
+  // ================== Búsqueda ==================
+  search(k, opc = 0) {
+    const entry = this.root.search(k);
+    if (!entry) return null;
 
-  search(k) {
-    return this.root.search(k);
+    switch (opc) {
+      case 0: return entry.key;
+      case 1: return entry.dMemoria;
+      case 2: return entry.value;
+      default: return entry; // por si se pasa otra cosa
+    }
+  }
+  updateValue(key, newValue) {
+    const entry = this.root.search(key);
+    if (!entry) {
+      console.log(`La llave ${key} no existe en el arbol.`);
+      return false;
+    }
+
+    entry.value = newValue; // solo se actualiza el valor
+    console.log(`Valor de la llave ${key} modificado correctamente.`);
+    return true;
+  }
+  // ================== Serialización ==================
+  serializar() {
+    // Devuelve una copia completa del arbol en formato JSON
+    return JSON.parse(JSON.stringify(this.root));
+  }
+
+  cargarDesdeSerializado(objeto) {
+    // Restaura el estado completo del arbol desde un objeto serializado
+    this.root = objeto;
   }
 }
+
 export { BTree };
